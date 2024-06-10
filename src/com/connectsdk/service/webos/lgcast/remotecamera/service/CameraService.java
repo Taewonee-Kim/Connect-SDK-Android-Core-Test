@@ -283,14 +283,14 @@ public class CameraService extends Service {
             }
         };
 
-        Logger.print("executeStart");
+        Logger.print("[taewon]executeStart");
         start(intent, connectionListener);
         mCameraOrientationListener.enable();
         if (com.connectsdk.BuildConfig.DEBUG == true) AppUtil.showToastLong(this, "########## DEBUG version ##########");
     }
 
     private void executeStop() {
-        Logger.print("executeStop");
+        Logger.print("[taewon]executeStop");
         mCameraOrientationListener.disable();
         stop();
         CameraServiceIF.respondStop(this, true);
@@ -484,7 +484,7 @@ public class CameraService extends Service {
             if (mCurrCameraOrientation != degree) {
                 mCurrCameraOrientation = degree;
                 mCameraProperty.orientation = mCurrCameraOrientation;
-                Logger.print("mCameraProperty.orientation = " + mCameraProperty.orientation);
+                Logger.print("[taewon]mCameraProperty.orientation = " + mCameraProperty.orientation);
 
                 if (mIsPlaying.get()) {
                     JSONObjectEx jsonObj = new JSONObjectEx().put(CameraProperty.ORIENTATION, mCameraProperty.orientation);
