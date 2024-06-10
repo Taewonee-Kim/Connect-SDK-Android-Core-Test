@@ -5,10 +5,13 @@
 package com.connectsdk.service.webos.lgcast.remotecamera.service;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Size;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import androidx.annotation.NonNull;
 import com.connectsdk.R;
@@ -58,12 +61,16 @@ public class CameraService extends Service {
     private CameraProperty mCameraProperty;
     private AtomicBoolean mIsPlaying = new AtomicBoolean();
 
+    private CameraOrientationListener mCameraOrientationListener;
+    private int mCurrCameraOrientation = -1;
+
     @Override
     public void onCreate() {
         super.onCreate();
         Logger.showDebug(com.connectsdk.BuildConfig.DEBUG);
         mServiceHandler = new HandlerThreadEx("CameraService Handler");
         mServiceHandler.start();
+        mCameraOrientationListener = new CameraOrientationListener(this);
     }
 
     @Override
@@ -98,6 +105,8 @@ public class CameraService extends Service {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (mCameraProperty == null || mConnectionManager == null) return;
+
+        Logger.debug("[taewon]onConfigurationChanged");
 
         mCameraProperty.rotation = AppUtil.getRotationDegree(getBaseContext());
         JSONObjectEx jsonObj = new JSONObjectEx().put(CameraProperty.ROTATION, mCameraProperty.rotation);
@@ -193,6 +202,7 @@ public class CameraService extends Service {
             public void onReceiveGetParameter(@NonNull JSONObject jsonObj) {
                 Logger.debug("onReceiveGetParameter");
                 mCameraProperty.rotation = AppUtil.getRotationDegree(getBaseContext());
+                mCameraProperty.orientation = mCurrCameraOrientation;
                 mConnectionManager.sendGetParameterResponse(mCameraProperty.toJSONObject());
             }
 
@@ -275,11 +285,13 @@ public class CameraService extends Service {
 
         Logger.print("executeStart");
         start(intent, connectionListener);
+        mCameraOrientationListener.enable();
         if (com.connectsdk.BuildConfig.DEBUG == true) AppUtil.showToastLong(this, "########## DEBUG version ##########");
     }
 
     private void executeStop() {
         Logger.print("executeStop");
+        mCameraOrientationListener.disable();
         stop();
         CameraServiceIF.respondStop(this, true);
     }
@@ -447,5 +459,39 @@ public class CameraService extends Service {
 
         if (mRTPStreaming != null) mRTPStreaming.close();
         mRTPStreaming = null;
+    }
+
+    private class CameraOrientationListener extends OrientationEventListener {
+        public CameraOrientationListener(Context context) {
+            super(context, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        @Override
+        public void onOrientationChanged(int orien) {
+            int degree;
+            if (orien >= 315 || orien < 45) {
+                degree = 0;
+            } else if (orien >= 45 && orien < 135) {
+                degree = 90;
+            } else if (orien >= 135 && orien < 225) {
+                degree = 180;
+            } else if (orien >= 225 && orien < 315) {
+                degree = 270;
+            } else {
+                degree = ORIENTATION_UNKNOWN;
+            }
+
+            if (mCurrCameraOrientation != degree) {
+                mCurrCameraOrientation = degree;
+                mCameraProperty.orientation = mCurrCameraOrientation;
+                Logger.print("mCameraProperty.orientation = " + mCameraProperty.orientation);
+
+                if (mIsPlaying.get()) {
+                    JSONObjectEx jsonObj = new JSONObjectEx().put(CameraProperty.ORIENTATION, mCameraProperty.orientation);
+                    mConnectionManager.updateSourceDeviceCapability(jsonObj.toJSONObject());
+                }
+            }
+        }
+
     }
 }

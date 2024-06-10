@@ -14,6 +14,7 @@ public class CameraProperty {
     public static final String AUTO_WHITE_BALANCE = "autoWhiteBalance";
     public static final String AUDIO = "audio";
     public static final String ROTATION = "rotation";
+    public static final String ORIENTATION = "orientation";
 
     // Camera Properties
     public int width = RemoteCameraConfig.Properties.DEFAULT_WIDTH;
@@ -24,6 +25,7 @@ public class CameraProperty {
     public boolean autoWhiteBalance = RemoteCameraConfig.Properties.DEFAULT_AUTO_WHITE_BALANCE;
     public boolean audio = RemoteCameraConfig.Properties.DEFAULT_AUDIO;
     public int rotation = -1;
+    public int orientation = -1;
 
     public CameraProperty() {
     }
@@ -38,6 +40,7 @@ public class CameraProperty {
         property.put(AUTO_WHITE_BALANCE, autoWhiteBalance);
         property.put(AUDIO, audio);
         property.put(ROTATION, rotation);
+        property.put(ORIENTATION, orientation);
         return property.toJSONObject();
     }
 
@@ -50,6 +53,7 @@ public class CameraProperty {
         Logger.debug(AUTO_WHITE_BALANCE + "=" + autoWhiteBalance);
         Logger.debug(AUDIO + "=" + audio);
         Logger.debug(ROTATION + "=" + rotation);
+        Logger.debug(ORIENTATION + "=" + orientation);
         Logger.debug("");
     }
 }
