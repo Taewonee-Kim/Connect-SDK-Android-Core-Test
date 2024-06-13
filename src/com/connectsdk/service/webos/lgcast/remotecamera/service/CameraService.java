@@ -7,6 +7,7 @@ package com.connectsdk.service.webos.lgcast.remotecamera.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.content.res.Configuration;
 import android.hardware.SensorManager;
 import android.os.IBinder;
@@ -376,7 +377,7 @@ public class CameraService extends Service {
 
     private void initializeService(@NonNull Intent intent) {
         Logger.print("initializeService (SDK version=%s)", IOUtil.readRawResourceText(this, R.raw.lgcast_version));
-        startForeground(RemoteCameraConfig.Notification.ID, CameraServiceFunc.createNotification(this));
+	startForeground(RemoteCameraConfig.Notification.ID, CameraServiceFunc.createNotification(this), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
     }
 
     private void terminateService() {
